@@ -38,12 +38,12 @@
         {# ===== Featured 文章优先显示 ===== #}
 
         {# 先渲染 Featured=True 的文章（置顶文章） #}
-        {% for subject in page.items if subject.featured %}
+        {% for subject in page.items if subject.is_featured %}
           {{ render_item(site, subject) }}
         {% endfor %}
 
         {# 再渲染普通文章 #}
-        {% for subject in page.items if not subject.featured %}
+        {% for subject in page.items if not subject.is_featured %}
           {{ render_item(site, subject) }}
         {% endfor %}
         {% if page.years %}
