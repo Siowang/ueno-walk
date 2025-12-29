@@ -2,6 +2,23 @@
 
 {% block style %}
   <link rel="stylesheet" href="{{ static_url }}ueno.css">
+  <style>
+    /* 这里的 CSS 可以给置顶文章加一个淡淡的背景或边框，增加区分度 */
+    .is-featured-post {
+      border-left: 4px solid #000; /* 给置顶文章左侧加一条黑线 */
+      padding-left: 15px;
+      margin-bottom: 30px;
+      position: relative;
+    }
+    .is-featured-post::before {
+      content: "置顶 / FEATURED";
+      font-size: 10px;
+      font-weight: bold;
+      color: #888;
+      display: block;
+      margin-bottom: 5px;
+    }
+  </style>
 {% endblock %}
 
 {% block body %}
@@ -9,19 +26,20 @@
     {% include "./_side.j2" %}
     <div class="main">
       <div class="inner main_mark">
-    {% set subjects = query.latest_subjects(count=50) %}
+        {% set subjects = query.latest_subjects(count=50) %}
 
-    {# ===== Featured 文章优先显示（首页） ===== #}
+        {# 1. 首先渲染被设置为 "Featured" 的文章 #}
+        {% for subject in subjects if subject.featured %}
+          <div class="is-featured-post">
+            {{ render_item(site, subject) }}
+          </div>
+        {% endfor %}
 
-    {# 先渲染置顶文章 #}
-    {% for subject in subjects if subject.is_featured %}
-      {{ render_item(site, subject) }}
-    {% endfor %}
+        {# 2. 然后渲染普通文章（排除掉已经置顶的，避免重复显示） #}
+        {% for subject in subjects if not subject.featured %}
+          {{ render_item(site, subject) }}
+        {% endfor %}
 
-    {# 再渲染普通文章 #}
-    {% for subject in subjects if not subject.is_featured %}
-      {{ render_item(site, subject) }}
-    {% endfor %}
         {% if subjects|count >= 10 %}
           {% set last = subjects|last %}
           <div class="home-more">
