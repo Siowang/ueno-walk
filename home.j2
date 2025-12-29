@@ -1,22 +1,22 @@
-{% from "macros.j2" import render_item %}
-
 {% block style %}
   <link rel="stylesheet" href="{{ static_url }}ueno.css">
   <style>
-    /* 这里的 CSS 可以给置顶文章加一个淡淡的背景或边框，增加区分度 */
-    .is-featured-post {
-      border-left: 4px solid #000; /* 给置顶文章左侧加一条黑线 */
-      padding-left: 15px;
-      margin-bottom: 30px;
+    /* 置顶文章的特殊样式 */
+    .sticky-entry {
+      border-bottom: 2px solid #000;
+      padding-bottom: 2rem;
+      margin-bottom: 3rem;
       position: relative;
     }
-    .is-featured-post::before {
-      content: "置顶 / FEATURED";
-      font-size: 10px;
-      font-weight: bold;
-      color: #888;
-      display: block;
-      margin-bottom: 5px;
+    .sticky-badge {
+      display: inline-block;
+      background: #000;
+      color: #fff;
+      padding: 2px 8px;
+      font-size: 12px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
   </style>
 {% endblock %}
@@ -28,16 +28,32 @@
       <div class="inner main_mark">
         {% set subjects = query.latest_subjects(count=50) %}
 
-        {# 1. 首先渲染被设置为 "Featured" 的文章 #}
+        {# ===== 1. 渲染置顶文章 (Featured) ===== #}
         {% for subject in subjects if subject.featured %}
-          <div class="is-featured-post">
-            {{ render_item(site, subject) }}
-          </div>
+          <article class="entry sticky-entry">
+            <div class="sticky-badge">置顶 Pinned</div>
+            <h2 class="entry-title">
+              <a href="{{ subject.url }}">{{ subject.title }}</a>
+            </h2>
+            <div class="entry-content">
+              {{ subject.content | striptags | truncate(160) }}
+            </div>
+            <div class="entry-meta">
+              <time>{{ subject.published_at | date("%Y-%m-%d") }}</time>
+            </div>
+          </article>
         {% endfor %}
 
-        {# 2. 然后渲染普通文章（排除掉已经置顶的，避免重复显示） #}
+        {# ===== 2. 渲染普通文章 (排除置顶) ===== #}
         {% for subject in subjects if not subject.featured %}
-          {{ render_item(site, subject) }}
+          <article class="entry">
+            <h2 class="entry-title">
+              <a href="{{ subject.url }}">{{ subject.title }}</a>
+            </h2>
+            <div class="entry-meta">
+              <time>{{ subject.published_at | date("%Y-%m-%d") }}</time>
+            </div>
+          </article>
         {% endfor %}
 
         {% if subjects|count >= 10 %}
