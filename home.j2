@@ -1,69 +1,25 @@
-{% block style %}
-  <link rel="stylesheet" href="{{ static_url }}ueno.css">
-  <style>
-    /* 置顶文章的特殊样式 */
-    .sticky-entry {
-      border-bottom: 2px solid #000;
-      padding-bottom: 2rem;
-      margin-bottom: 3rem;
-      position: relative;
-    }
-    .sticky-badge {
-      display: inline-block;
-      background: #000;
-      color: #fff;
-      padding: 2px 8px;
-      font-size: 12px;
-      margin-bottom: 10px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-  </style>
-{% endblock %}
-
 {% block body %}
   <div class="body">
     {% include "./_side.j2" %}
     <div class="main">
       <div class="inner main_mark">
-        {% set subjects = query.latest_subjects(count=50) %}
-
-        {# ===== 1. 渲染置顶文章 (Featured) ===== #}
-        {% for subject in subjects if subject.featured %}
-          <article class="entry sticky-entry">
-            <div class="sticky-badge">置顶 Pinned</div>
-            <h2 class="entry-title">
-              <a href="{{ subject.url }}">{{ subject.title }}</a>
-            </h2>
-            <div class="entry-content">
-              {{ subject.content | striptags | truncate(160) }}
-            </div>
-            <div class="entry-meta">
-              <time>{{ subject.published_at | date("%Y-%m-%d") }}</time>
-            </div>
-          </article>
-        {% endfor %}
-
-        {# ===== 2. 渲染普通文章 (排除置顶) ===== #}
-        {% for subject in subjects if not subject.featured %}
-          <article class="entry">
-            <h2 class="entry-title">
-              <a href="{{ subject.url }}">{{ subject.title }}</a>
-            </h2>
-            <div class="entry-meta">
-              <time>{{ subject.published_at | date("%Y-%m-%d") }}</time>
-            </div>
-          </article>
-        {% endfor %}
-
-        {% if subjects|count >= 10 %}
-          {% set last = subjects|last %}
-          <div class="home-more">
-            <a href="{{ linkify(site.list_url) }}{{last.published_at.year}}/#item-{{last.id}}">ARCHIVE →</a>
+        
+        {# 模仿 Aoyama：使用专门的置顶查询接口 #}
+        {% set featured_posts = query.featured_subjects() %}
+        {% for post in featured_posts %}
+          <div class="sticky-item" style="border-bottom: 2px solid #000; margin-bottom: 20px;">
+            <span style="font-size: 12px; background: #000; color: #fff; padding: 2px 5px;">置顶</span>
+            <h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
           </div>
-        {% endif %}
+        {% endfor %}
+
+        {# 正常列表 #}
+        {% set subjects = query.latest_subjects(count=20) %}
+        {% for subject in subjects if not subject.featured %}
+           <p><a href="{{ subject.url }}">{{ subject.title }}</a></p>
+        {% endfor %}
+
       </div>
     </div>
   </div>
-  {% include "./_foot.j2" %}
 {% endblock %}
